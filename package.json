@@ -1,6 +1,6 @@
 {
   "name": "@randajan/queue",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Tiny javascript library to pack many calling of the same function to one execution",
   "repository": "randajan/queue",
   "type": "module",
@@ -14,7 +14,18 @@
     "build": "set NODE_ENV=prod&& node ./index.js"
   },
   "license": "MIT",
-  "keywords": ["asynchronous", "queue", "task", "execution", "processing", "efficiency", "JavaScript", "library", "utility", "optimization"],
+  "keywords": [
+    "asynchronous",
+    "queue",
+    "task",
+    "execution",
+    "processing",
+    "efficiency",
+    "JavaScript",
+    "library",
+    "utility",
+    "optimization"
+  ],
   "devDependencies": {
     "@randajan/simple-lib": "^2.3.1"
   },
