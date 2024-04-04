@@ -67,7 +67,4 @@ There is extra properties that is append to the function retrieved from calling 
 | **hardEndAt**  | Returns the timestamp when the hard time limit for executing tasks forcibly ends, regardless of whether new tasks are added. If there is no tasks or the hard time limit is not active, it returns `undefined`. |
 
 ### License
-MIT © [randajan](https://github.com/randajan)ned`. |
-
-### License
 MIT © [randajan](https://github.com/randajan)
