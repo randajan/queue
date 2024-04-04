@@ -1,5 +1,5 @@
 // <define:__slib_info>
-var define_slib_info_default = { isBuild: false, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.0.1", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
+var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.0.2", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
 
 // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
 import chalkNative from "chalk";
@@ -59,7 +59,7 @@ process.on("uncaughtException", (e) => {
 
 // dist/index.js
 import chalkNative2 from "chalk";
-var define_slib_info_default2 = { isBuild: false, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.0.1", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "dist" } };
+var define_slib_info_default2 = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.0.2", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "dist" } };
 var chalkProps2 = Object.getOwnPropertyNames(Object.getPrototypeOf(chalkNative2)).filter((v) => v !== "constructor");
 var Logger2 = class extends Function {
   constructor(formater, chalkInit) {
@@ -168,8 +168,8 @@ var Queue = class extends Function {
       isPending: { enumerable: true, get: (_) => !!startAt },
       size: { enumerable: true, get: (_) => tasks.length },
       startAt: { enumerable: true, get: (_) => startAt },
-      bufferEndAt: { enumerable: true, get: (_) => !startAt ? void 0 : startAt + softMs },
-      queueEndAt: { enumerable: true, get: (_) => !startAt || !hardMsActive ? void 0 : startAt + hardMs }
+      softEndAt: { enumerable: true, get: (_) => !startAt ? void 0 : startAt + softMs },
+      hardEndAt: { enumerable: true, get: (_) => !startAt || !hardMsActive ? void 0 : startAt + hardMs }
     });
     return self;
   }

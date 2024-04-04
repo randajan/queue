@@ -14,7 +14,7 @@
     "build": "set NODE_ENV=prod&& node ./index.js"
   },
   "license": "MIT",
-  "keywords": [],
+  "keywords": ["asynchronous", "queue", "task", "execution", "processing", "efficiency", "JavaScript", "library", "utility", "optimization"],
   "devDependencies": {
     "@randajan/simple-lib": "^2.3.1"
   },
