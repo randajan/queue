@@ -1,5 +1,3 @@
-
-import { info, log } from "@randajan/simple-lib/lib";
 import { numOrZero, toArray } from "./tools";
 
 const _pass = ["all", "first", "last"];

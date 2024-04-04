@@ -1,5 +1,5 @@
 // <define:__slib_info>
-var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.1", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
+var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.2", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
 
 // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
 import chalkNative from "chalk";
@@ -8,10 +8,10 @@ var Logger = class extends Function {
   constructor(formater, chalkInit) {
     super();
     const chalk = chalkInit || chalkNative;
-    const log3 = (...msgs) => {
+    const log2 = (...msgs) => {
       console.log(chalk(formater(msgs)));
     };
-    const self = Object.setPrototypeOf(log3.bind(), new.target.prototype);
+    const self = Object.setPrototypeOf(log2.bind(), new.target.prototype);
     for (const prop of chalkProps) {
       Object.defineProperty(self, prop, { get: (_) => new Logger(formater, chalk[prop]), enumerable: false });
     }
@@ -58,48 +58,6 @@ process.on("uncaughtException", (e) => {
 });
 
 // dist/index.js
-import chalkNative2 from "chalk";
-var define_slib_info_default2 = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.1", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "dist" } };
-var chalkProps2 = Object.getOwnPropertyNames(Object.getPrototypeOf(chalkNative2)).filter((v) => v !== "constructor");
-var Logger2 = class extends Function {
-  constructor(formater, chalkInit) {
-    super();
-    const chalk = chalkInit || chalkNative2;
-    const log22 = (...msgs) => {
-      console.log(chalk(formater(msgs)));
-    };
-    const self = Object.setPrototypeOf(log22.bind(), new.target.prototype);
-    for (const prop of chalkProps2) {
-      Object.defineProperty(self, prop, { get: (_) => new Logger2(formater, chalk[prop]), enumerable: false });
-    }
-    return self;
-  }
-};
-var logger2 = (...prefixes) => {
-  const now = (_) => new Date().toLocaleTimeString("cs-CZ");
-  prefixes = prefixes.filter((v) => !!v).join(" ");
-  return new Logger2((msgs) => `${prefixes} | ${now()} | ${msgs.join(" ")}`);
-};
-var enumerable2 = true;
-var lockObject2 = (o) => {
-  if (typeof o !== "object") {
-    return o;
-  }
-  const r = {};
-  for (const i in o) {
-    const descriptor = { enumerable: enumerable2 };
-    let val = o[i];
-    if (val instanceof Array) {
-      descriptor.get = (_) => [...val];
-    } else {
-      descriptor.value = lockObject2(val);
-    }
-    Object.defineProperty(r, i, descriptor);
-  }
-  return r;
-};
-var info2 = lockObject2(define_slib_info_default2);
-var log2 = logger2(info2.name, info2.version, info2.env);
 var numOrZero = (num) => {
   const n = Number(num);
   return isNaN(n) ? 0 : Math.max(0, n);
