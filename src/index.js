@@ -59,7 +59,7 @@ export class Queue extends Function {
             if (maxSize && tasks.length >= maxSize) { execute(); }
             else { intA = setTimeout(execute, softMs); }
 
-            return prom.result;
+            if (opt.returnResult) { return prom.result; }
         }
 
         const self = Object.setPrototypeOf(call, new.target.prototype);

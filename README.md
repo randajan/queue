@@ -38,7 +38,7 @@ queue('task2');
 ### `createQueue(processQueue, options)`
 Creates a new task queue.
 
-Return of this call will be a function that will push any arguments to the queue for later procesing via processQueue. Pushing arguments into queue return a standard Promise that will eventually resolve with the result of calling processQueue function.
+Return of this call will be a function that will push any arguments to the queue for later procesing via processQueue. Pushing arguments into queue return a Promise that will eventually resolve with the result of calling processQueue function.
 
 
 #### `processQueue` (required)
@@ -52,11 +52,9 @@ An object containing configuration options for the queue:
 | **softMs** | `0` | The soft time limit (in milliseconds) before executing the task processing function after the last task is added to the queue. If tasks keep coming in before this time limit is reached, the execution of the tasks will be delayed. |
 | **hardMs** | `0` | The hard time limit (in milliseconds) before forcefully executing the task processing function, regardless of whether new tasks are added or not. |
 | **maxSize** | `0` | The maximum size of the queue. Once the queue reaches this size, the task processing function will be executed immediately. Value `0` means no maximum size limit. |
+| **returnResult** | false | When true the queue Promise will wait and return the result of the processQueue call |
 | **args** | [] | Arguments that will be passed to the `processQueue` function |
-| **pass** | "all" | Specifies how tasks are passed to the `processQueue` function. Possible values are `"all"`, `"first"`, and `"last"`. |
-| | | - `"all"`: All tasks in the queue are passed as an array at the beginning of the arguments to the `processQueue` function. |
-| | | - `"first"`: Only the first task in the queue is passed as individual arguments to the `processQueue` function. |
-| | | - `"last"`: Only the last task in the queue is passed as individual arguments to the `processQueue` function. |
+| **pass** | "all" | Specifies how tasks are passed to the `processQueue` function. Possible values are:<br>- `"all"`: All tasks in the queue are passed as an array at the beginning of the arguments to the `processQueue` function.<br>- `"first"`: Only the first task in the queue is passed as individual arguments to the `processQueue` function.<br>- `"last"`: Only the last task in the queue is passed as individual arguments to the `processQueue` function. |
 
 ## Extra
 There is extra properties that is append to the function retrieved from calling `createQueue(...)`
