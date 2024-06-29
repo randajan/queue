@@ -2,6 +2,15 @@ import { numOrZero, toArray } from "./tools";
 
 const _pass = ["all", "first", "last"];
 
+export const fakePromise = ()=>{
+    const prom = {};
+    prom.result = new Promise((res, rej)=>{
+        prom.resolve = res;
+        prom.reject = rej;
+    });
+    return prom;
+}
+
 export class Queue extends Function {
 
     constructor(processTasks, opt={}) {
@@ -21,31 +30,36 @@ export class Queue extends Function {
         const maxSize = numOrZero(opt.maxSize);
         const hardMsActive = hardMs > softMs;
 
-        let pcq, intA, intB, startAt, tasks = [];
+        let pcq, intA, intB, startAt, prom, tasks = [];
 
-        if (pass === "all") { pcq = q=>processTasks(...args, q); }
-        else if (pass === "first") { pcq = q=>processTasks(...args, ...q[0]); }
-        else if (pass === "last") { pcq = q=>processTasks(...args, ...q[q.length-1]); }
+        if (pass === "all") { pcq = async q=>processTasks(...args, q); }
+        else if (pass === "first") { pcq = async q=>processTasks(...args, ...q[0]); }
+        else if (pass === "last") { pcq = async q=>processTasks(...args, ...q[q.length-1]); }
 
-        const execute = _=>{
+        const init = _=>{
+            startAt = Date.now();
+            prom = fakePromise();
+            if (hardMsActive) { intB = setTimeout(execute, hardMs); }
+        }
+
+        const execute = async _=>{
             clearTimeout(intA);
             clearTimeout(intB);
             const q = tasks;
             tasks = [];
             startAt = undefined;
-            pcq(q);
+            pcq(q).then(prom.resolve).catch(prom.reject);
         };
 
-        const call = (...args)=>{
+        const call = async (...args)=>{
             clearTimeout(intA);
             tasks.push(args);
-            if (maxSize && tasks.length >= maxSize) { return execute(); }
 
-            intA = setTimeout(execute, softMs);
-            if (tasks.length !== 1) { return; }
+            if (tasks.length === 1) {init();}
+            if (maxSize && tasks.length >= maxSize) { execute(); }
+            else { intA = setTimeout(execute, softMs); }
 
-            startAt = Date.now();
-            if (hardMsActive) { intB = setTimeout(execute, hardMs); }
+            return prom.result;
         }
 
         const self = Object.setPrototypeOf(call, new.target.prototype);

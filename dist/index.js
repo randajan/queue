@@ -15,6 +15,14 @@ var toArray = (any) => {
 
 // src/index.js
 var _pass = ["all", "first", "last"];
+var fakePromise = () => {
+  const prom = {};
+  prom.result = new Promise((res, rej) => {
+    prom.resolve = res;
+    prom.reject = rej;
+  });
+  return prom;
+};
 var Queue = class extends Function {
   constructor(processTasks, opt = {}) {
     super();
@@ -33,36 +41,41 @@ var Queue = class extends Function {
     const hardMs = numOrZero(opt.hardMs);
     const maxSize = numOrZero(opt.maxSize);
     const hardMsActive = hardMs > softMs;
-    let pcq, intA, intB, startAt, tasks = [];
+    let pcq, intA, intB, startAt, prom, tasks = [];
     if (pass === "all") {
-      pcq = (q) => processTasks(...args, q);
+      pcq = async (q) => processTasks(...args, q);
     } else if (pass === "first") {
-      pcq = (q) => processTasks(...args, ...q[0]);
+      pcq = async (q) => processTasks(...args, ...q[0]);
     } else if (pass === "last") {
-      pcq = (q) => processTasks(...args, ...q[q.length - 1]);
+      pcq = async (q) => processTasks(...args, ...q[q.length - 1]);
     }
-    const execute = (_) => {
+    const init = (_) => {
+      startAt = Date.now();
+      prom = fakePromise();
+      if (hardMsActive) {
+        intB = setTimeout(execute, hardMs);
+      }
+    };
+    const execute = async (_) => {
       clearTimeout(intA);
       clearTimeout(intB);
       const q = tasks;
       tasks = [];
       startAt = void 0;
-      pcq(q);
+      pcq(q).then(prom.resolve).catch(prom.reject);
     };
-    const call = (...args2) => {
+    const call = async (...args2) => {
       clearTimeout(intA);
       tasks.push(args2);
+      if (tasks.length === 1) {
+        init();
+      }
       if (maxSize && tasks.length >= maxSize) {
-        return execute();
+        execute();
+      } else {
+        intA = setTimeout(execute, softMs);
       }
-      intA = setTimeout(execute, softMs);
-      if (tasks.length !== 1) {
-        return;
-      }
-      startAt = Date.now();
-      if (hardMsActive) {
-        intB = setTimeout(execute, hardMs);
-      }
+      return prom.result;
     };
     const self = Object.setPrototypeOf(call, new.target.prototype);
     Object.defineProperties(self, {
@@ -80,6 +93,7 @@ var src_default = createQueue;
 export {
   Queue,
   createQueue,
-  src_default as default
+  src_default as default,
+  fakePromise
 };
 //# sourceMappingURL=index.js.map

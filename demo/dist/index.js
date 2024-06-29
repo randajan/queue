@@ -1,5 +1,5 @@
 // <define:__slib_info>
-var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.2", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
+var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.3", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
 
 // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
 import chalkNative from "chalk";
@@ -72,6 +72,14 @@ var toArray = (any) => {
   return [any];
 };
 var _pass = ["all", "first", "last"];
+var fakePromise = () => {
+  const prom = {};
+  prom.result = new Promise((res, rej) => {
+    prom.resolve = res;
+    prom.reject = rej;
+  });
+  return prom;
+};
 var Queue = class extends Function {
   constructor(processTasks, opt = {}) {
     super();
@@ -90,36 +98,41 @@ var Queue = class extends Function {
     const hardMs = numOrZero(opt.hardMs);
     const maxSize = numOrZero(opt.maxSize);
     const hardMsActive = hardMs > softMs;
-    let pcq, intA, intB, startAt, tasks = [];
+    let pcq, intA, intB, startAt, prom, tasks = [];
     if (pass === "all") {
-      pcq = (q2) => processTasks(...args, q2);
+      pcq = async (q2) => processTasks(...args, q2);
     } else if (pass === "first") {
-      pcq = (q2) => processTasks(...args, ...q2[0]);
+      pcq = async (q2) => processTasks(...args, ...q2[0]);
     } else if (pass === "last") {
-      pcq = (q2) => processTasks(...args, ...q2[q2.length - 1]);
+      pcq = async (q2) => processTasks(...args, ...q2[q2.length - 1]);
     }
-    const execute = (_) => {
+    const init = (_) => {
+      startAt = Date.now();
+      prom = fakePromise();
+      if (hardMsActive) {
+        intB = setTimeout(execute, hardMs);
+      }
+    };
+    const execute = async (_) => {
       clearTimeout(intA);
       clearTimeout(intB);
       const q2 = tasks;
       tasks = [];
       startAt = void 0;
-      pcq(q2);
+      pcq(q2).then(prom.resolve).catch(prom.reject);
     };
-    const call = (...args2) => {
+    const call = async (...args2) => {
       clearTimeout(intA);
       tasks.push(args2);
+      if (tasks.length === 1) {
+        init();
+      }
       if (maxSize && tasks.length >= maxSize) {
-        return execute();
+        execute();
+      } else {
+        intA = setTimeout(execute, softMs);
       }
-      intA = setTimeout(execute, softMs);
-      if (tasks.length !== 1) {
-        return;
-      }
-      startAt = Date.now();
-      if (hardMsActive) {
-        intB = setTimeout(execute, hardMs);
-      }
+      return prom.result;
     };
     const self = Object.setPrototypeOf(call, new.target.prototype);
     Object.defineProperties(self, {
@@ -136,16 +149,17 @@ var createQueue = (processTasks, opt = {}) => new Queue(processTasks, opt);
 var src_default = createQueue;
 
 // demo/src/index.js
-var q = src_default((...args) => {
-  console.log(...args);
+var q = src_default((c2) => {
+  console.log("processQueue", c2);
+  return c2;
 }, {
   softMs: 1e3,
   hardMs: 3e3,
   maxSize: 10,
-  pass: "all"
+  pass: "last"
 });
 var c = 0;
-setInterval((_) => {
-  q(c += 1);
+setInterval(async (_) => {
+  console.log("result", await q(c += 1));
 }, 100);
 //# sourceMappingURL=index.js.map

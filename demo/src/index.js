@@ -4,16 +4,17 @@ import createQueue from "../../dist/index.js";
 
 
 
-const q = createQueue((...args)=>{
-    console.log(...args);
+const q = createQueue((c)=>{
+    console.log("processQueue", c);
+    return c;
 }, {
     softMs:1000,
     hardMs:3000,
     maxSize:10,
-    pass:"all"
+    pass:"last"
 });
 
 let c = 0;
-setInterval(_=>{
-    q(c+=1);
+setInterval(async _=>{
+    console.log("result", await q(c+=1));
 }, 100);
