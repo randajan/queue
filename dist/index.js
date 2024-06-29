@@ -75,7 +75,9 @@ var Queue = class extends Function {
       } else {
         intA = setTimeout(execute, softMs);
       }
-      return prom.result;
+      if (opt.returnResult) {
+        return prom.result;
+      }
     };
     const self = Object.setPrototypeOf(call, new.target.prototype);
     Object.defineProperties(self, {

@@ -1,5 +1,5 @@
 // <define:__slib_info>
-var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.3", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
+var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.4", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
 
 // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
 import chalkNative from "chalk";
@@ -132,7 +132,9 @@ var Queue = class extends Function {
       } else {
         intA = setTimeout(execute, softMs);
       }
-      return prom.result;
+      if (opt.returnResult) {
+        return prom.result;
+      }
     };
     const self = Object.setPrototypeOf(call, new.target.prototype);
     Object.defineProperties(self, {
