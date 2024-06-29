@@ -38,6 +38,9 @@ queue('task2');
 ### `createQueue(processQueue, options)`
 Creates a new task queue.
 
+Return of this call will be a function that will push any arguments to the queue for later procesing via processQueue. Pushing arguments into queue return a standard Promise that will eventually resolve with the result of calling processQueue function.
+
+
 #### `processQueue` (required)
 A function that processes tasks in the queue. It must be passed as the first parameter when creating the queue. Without this function, the queue has no purpose and will result in an error.
 
