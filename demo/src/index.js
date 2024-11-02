@@ -11,7 +11,8 @@ const q = createQueue((c)=>{
     softMs:1000,
     hardMs:3000,
     maxSize:10,
-    pass:"last"
+    pass:"last",
+    onInit:_=>console.log("AAA")
 });
 
 let c = 0;

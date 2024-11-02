@@ -1,5 +1,5 @@
 // <define:__slib_info>
-var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.4", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
+var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.5", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
 
 // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
 import chalkNative from "chalk";
@@ -87,13 +87,15 @@ var Queue = class extends Function {
     if (typeof processTasks !== "function") {
       throw Error("Queue(...) expect first argument to be function");
     }
-    if (!opt.pass) {
-      opt.pass = "all";
-    } else if (!_pass.includes(opt.pass)) {
+    const onInit = opt.onInit;
+    if (onInit && typeof onInit !== "function") {
+      throw Error("Queue(...) expect opt.onInit to be function");
+    }
+    const pass = opt.pass != null ? opt.pass : "all";
+    if (!_pass.includes(pass)) {
       throw Error(`Queue(...) expect opt.pass to be one of: '${_pass.join("|")}'`);
     }
     const args = toArray(opt.args);
-    const pass = opt.pass;
     const softMs = numOrZero(opt.softMs);
     const hardMs = numOrZero(opt.hardMs);
     const maxSize = numOrZero(opt.maxSize);
@@ -109,6 +111,9 @@ var Queue = class extends Function {
     const init = (_) => {
       startAt = Date.now();
       prom = fakePromise();
+      if (onInit) {
+        onInit();
+      }
       if (hardMsActive) {
         intB = setTimeout(execute, hardMs);
       }
@@ -158,7 +163,8 @@ var q = src_default((c2) => {
   softMs: 1e3,
   hardMs: 3e3,
   maxSize: 10,
-  pass: "last"
+  pass: "last",
+  onInit: (_) => console.log("AAA")
 });
 var c = 0;
 setInterval(async (_) => {

@@ -20,16 +20,18 @@ export class Queue extends Function {
 
         if (typeof processTasks !== "function") { throw Error("Queue(...) expect first argument to be function"); }
 
-        if (!opt.pass) { opt.pass = "all"; }
-        else if (!_pass.includes(opt.pass)) { throw Error(`Queue(...) expect opt.pass to be one of: '${_pass.join("|")}'`); }
+        const onInit = opt.onInit;
+        if (onInit && typeof onInit !== "function") { throw Error("Queue(...) expect opt.onInit to be function"); }
+
+        const pass = opt.pass != null ? opt.pass : "all";
+        if (!_pass.includes(pass)) { throw Error(`Queue(...) expect opt.pass to be one of: '${_pass.join("|")}'`); }
         
         const args = toArray(opt.args);
-        const pass = opt.pass;
         const softMs = numOrZero(opt.softMs);
         const hardMs = numOrZero(opt.hardMs);
         const maxSize = numOrZero(opt.maxSize);
         const hardMsActive = hardMs > softMs;
-
+        
         let pcq, intA, intB, startAt, prom, tasks = [];
 
         if (pass === "all") { pcq = async q=>processTasks(...args, q); }
@@ -39,6 +41,7 @@ export class Queue extends Function {
         const init = _=>{
             startAt = Date.now();
             prom = fakePromise();
+            if (onInit) { onInit(); }
             if (hardMsActive) { intB = setTimeout(execute, hardMs); }
         }
 

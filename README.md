@@ -55,6 +55,7 @@ An object containing configuration options for the queue:
 | **returnResult** | false | When true the queue Promise will wait and return the result of the processQueue call otherwise it return imediately nothing |
 | **args** | [] | Arguments that will be passed to the `processQueue` function |
 | **pass** | "all" | Specifies how tasks are passed to the `processQueue` function. Possible values are:<br>- `"all"`: All tasks in the queue are passed as an array at the beginning of the arguments to the `processQueue` function.<br>- `"first"`: Only the first task in the queue is passed as individual arguments to the `processQueue` function.<br>- `"last"`: Only the last task in the queue is passed as individual arguments to the `processQueue` function. |
+| **onInit** | undefined | When function is provided it will be called right after initialization of new queue |
 
 ## Extra
 There is extra properties that is append to the function retrieved from calling `createQueue(...)`
