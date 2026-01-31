@@ -1,6 +1,6 @@
 {
   "name": "@randajan/queue",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Tiny javascript library to pack many calling of the same function to one execution",
   "repository": "randajan/queue",
   "type": "module",
