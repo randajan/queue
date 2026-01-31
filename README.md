@@ -60,6 +60,7 @@ notify({ title: 'Payment failed' });
 notify({ title: 'New comment' });
 ```
 
+
 ## API
 
 ### `createQueue(processQueue, options)`
