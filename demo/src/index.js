@@ -8,14 +8,15 @@ const q = createQueue((c)=>{
     console.log("processQueue", c);
     return c;
 }, {
-    softMs:1000,
-    hardMs:3000,
-    maxSize:10,
-    pass:"last",
+    hardMs:5000,
+    minSize:27,
+    pass:"all",
+    returnResult:true,
     onInit:_=>console.log("AAA")
 });
 
 let c = 0;
 setInterval(async _=>{
-    console.log("result", await q(c+=1));
-}, 100);
+    q(c+=1)
+    //console.log("result", await q(c+=1));
+}, 200);

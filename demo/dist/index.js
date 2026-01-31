@@ -1,5 +1,5 @@
 // <define:__slib_info>
-var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.5", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
+var define_slib_info_default = { isBuild: true, name: "@randajan/queue", description: "Tiny javascript library to pack many calling of the same function to one execution", version: "0.1.6", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3e3, dir: { root: "C:\\dev\\lib\\queue", dist: "demo/dist" } };
 
 // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
 import chalkNative from "chalk";
@@ -96,9 +96,11 @@ var Queue = class extends Function {
       throw Error(`Queue(...) expect opt.pass to be one of: '${_pass.join("|")}'`);
     }
     const args = toArray(opt.args);
-    const softMs = numOrZero(opt.softMs);
-    const hardMs = numOrZero(opt.hardMs);
+    const minSize = numOrZero(opt.minSize);
     const maxSize = numOrZero(opt.maxSize);
+    const hardMs = numOrZero(opt.hardMs);
+    const softMs = numOrZero(opt.softMs);
+    const softMsActive = !!softMs;
     const hardMsActive = hardMs > softMs;
     let pcq, intA, intB, startAt, prom, tasks = [];
     if (pass === "all") {
@@ -118,15 +120,21 @@ var Queue = class extends Function {
         intB = setTimeout(execute, hardMs);
       }
     };
-    const execute = async (_) => {
+    const flush = (_) => {
       clearTimeout(intA);
       clearTimeout(intB);
-      const q2 = tasks;
       tasks = [];
       startAt = void 0;
-      pcq(q2).then(prom.resolve).catch(prom.reject);
     };
-    const call = async (...args2) => {
+    const execute = async (_) => {
+      const q2 = tasks;
+      flush();
+      if (q2.length < minSize) {
+        return prom?.resolve();
+      }
+      return pcq(q2).then(prom.resolve).catch(prom.reject);
+    };
+    const attach = async (...args2) => {
       clearTimeout(intA);
       tasks.push(args2);
       if (tasks.length === 1) {
@@ -134,20 +142,22 @@ var Queue = class extends Function {
       }
       if (maxSize && tasks.length >= maxSize) {
         execute();
-      } else {
+      } else if (softMsActive) {
         intA = setTimeout(execute, softMs);
       }
       if (opt.returnResult) {
         return prom.result;
       }
     };
-    const self = Object.setPrototypeOf(call, new.target.prototype);
+    const self = Object.setPrototypeOf(attach, new.target.prototype);
     Object.defineProperties(self, {
       isPending: { enumerable: true, get: (_) => !!startAt },
       size: { enumerable: true, get: (_) => tasks.length },
       startAt: { enumerable: true, get: (_) => startAt },
-      softEndAt: { enumerable: true, get: (_) => !startAt ? void 0 : startAt + softMs },
-      hardEndAt: { enumerable: true, get: (_) => !startAt || !hardMsActive ? void 0 : startAt + hardMs }
+      softEndAt: { enumerable: true, get: (_) => !startAt || !softMsActive ? void 0 : startAt + softMs },
+      hardEndAt: { enumerable: true, get: (_) => !startAt || !hardMsActive ? void 0 : startAt + hardMs },
+      execute: { value: execute },
+      flush: { value: flush }
     });
     return self;
   }
@@ -160,14 +170,14 @@ var q = src_default((c2) => {
   console.log("processQueue", c2);
   return c2;
 }, {
-  softMs: 1e3,
-  hardMs: 3e3,
-  maxSize: 10,
-  pass: "last",
+  hardMs: 5e3,
+  minSize: 27,
+  pass: "all",
+  returnResult: true,
   onInit: (_) => console.log("AAA")
 });
 var c = 0;
 setInterval(async (_) => {
-  console.log("result", await q(c += 1));
-}, 100);
+  q(c += 1);
+}, 200);
 //# sourceMappingURL=index.js.map

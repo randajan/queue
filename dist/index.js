@@ -39,9 +39,11 @@ var Queue = class extends Function {
       throw Error(`Queue(...) expect opt.pass to be one of: '${_pass.join("|")}'`);
     }
     const args = toArray(opt.args);
-    const softMs = numOrZero(opt.softMs);
-    const hardMs = numOrZero(opt.hardMs);
+    const minSize = numOrZero(opt.minSize);
     const maxSize = numOrZero(opt.maxSize);
+    const hardMs = numOrZero(opt.hardMs);
+    const softMs = numOrZero(opt.softMs);
+    const softMsActive = !!softMs;
     const hardMsActive = hardMs > softMs;
     let pcq, intA, intB, startAt, prom, tasks = [];
     if (pass === "all") {
@@ -61,15 +63,21 @@ var Queue = class extends Function {
         intB = setTimeout(execute, hardMs);
       }
     };
-    const execute = async (_) => {
+    const flush = (_) => {
       clearTimeout(intA);
       clearTimeout(intB);
-      const q = tasks;
       tasks = [];
       startAt = void 0;
-      pcq(q).then(prom.resolve).catch(prom.reject);
     };
-    const call = async (...args2) => {
+    const execute = async (_) => {
+      const q = tasks;
+      flush();
+      if (q.length < minSize) {
+        return prom?.resolve();
+      }
+      return pcq(q).then(prom.resolve).catch(prom.reject);
+    };
+    const attach = async (...args2) => {
       clearTimeout(intA);
       tasks.push(args2);
       if (tasks.length === 1) {
@@ -77,20 +85,22 @@ var Queue = class extends Function {
       }
       if (maxSize && tasks.length >= maxSize) {
         execute();
-      } else {
+      } else if (softMsActive) {
         intA = setTimeout(execute, softMs);
       }
       if (opt.returnResult) {
         return prom.result;
       }
     };
-    const self = Object.setPrototypeOf(call, new.target.prototype);
+    const self = Object.setPrototypeOf(attach, new.target.prototype);
     Object.defineProperties(self, {
       isPending: { enumerable: true, get: (_) => !!startAt },
       size: { enumerable: true, get: (_) => tasks.length },
       startAt: { enumerable: true, get: (_) => startAt },
-      softEndAt: { enumerable: true, get: (_) => !startAt ? void 0 : startAt + softMs },
-      hardEndAt: { enumerable: true, get: (_) => !startAt || !hardMsActive ? void 0 : startAt + hardMs }
+      softEndAt: { enumerable: true, get: (_) => !startAt || !softMsActive ? void 0 : startAt + softMs },
+      hardEndAt: { enumerable: true, get: (_) => !startAt || !hardMsActive ? void 0 : startAt + hardMs },
+      execute: { value: execute },
+      flush: { value: flush }
     });
     return self;
   }

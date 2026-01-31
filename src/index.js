@@ -27,10 +27,13 @@ export class Queue extends Function {
         if (!_pass.includes(pass)) { throw Error(`Queue(...) expect opt.pass to be one of: '${_pass.join("|")}'`); }
         
         const args = toArray(opt.args);
-        const softMs = numOrZero(opt.softMs);
-        const hardMs = numOrZero(opt.hardMs);
+        const minSize = numOrZero(opt.minSize);
         const maxSize = numOrZero(opt.maxSize);
+        const hardMs = numOrZero(opt.hardMs);
+        const softMs = numOrZero(opt.softMs);
+        const softMsActive = !!softMs;
         const hardMsActive = hardMs > softMs;
+        
         
         let pcq, intA, intB, startAt, prom, tasks = [];
 
@@ -45,34 +48,41 @@ export class Queue extends Function {
             if (hardMsActive) { intB = setTimeout(execute, hardMs); }
         }
 
-        const execute = async _=>{
+        const flush = _=>{
             clearTimeout(intA);
             clearTimeout(intB);
-            const q = tasks;
             tasks = [];
             startAt = undefined;
-            pcq(q).then(prom.resolve).catch(prom.reject);
+        }
+
+        const execute = async _=>{
+            const q = tasks;
+            flush();
+            if (q.length < minSize) { return prom?.resolve(); }
+            return pcq(q).then(prom.resolve).catch(prom.reject);
         };
 
-        const call = async (...args)=>{
+        const attach = async (...args)=>{
             clearTimeout(intA);
             tasks.push(args);
 
             if (tasks.length === 1) {init();}
             if (maxSize && tasks.length >= maxSize) { execute(); }
-            else { intA = setTimeout(execute, softMs); }
+            else if (softMsActive) { intA = setTimeout(execute, softMs); }
 
             if (opt.returnResult) { return prom.result; }
         }
 
-        const self = Object.setPrototypeOf(call, new.target.prototype);
+        const self = Object.setPrototypeOf(attach, new.target.prototype);
 
         Object.defineProperties(self, {
             isPending:{ enumerable:true, get:_=>!!startAt },
             size:{ enumerable:true, get:_=>tasks.length },
             startAt:{ enumerable:true, get:_=>startAt },
-            softEndAt:{ enumerable:true, get:_=>!startAt ? undefined : (startAt + softMs) },
-            hardEndAt:{ enumerable:true, get:_=>(!startAt || !hardMsActive) ? undefined : (startAt + hardMs) }
+            softEndAt:{ enumerable:true, get:_=>(!startAt || !softMsActive) ? undefined : (startAt + softMs) },
+            hardEndAt:{ enumerable:true, get:_=>(!startAt || !hardMsActive) ? undefined : (startAt + hardMs) },
+            execute:{ value:execute },
+            flush:{ value:flush }
         });
 
         return self;
